@@ -91,10 +91,21 @@ class HUD:
     def draw_leaderboard(self, surface, entries):
         y_start = 440
         self._draw_text_centered(surface, "LEADERBOARD", SCREEN_WIDTH // 2, y_start, self.font, YELLOW)
-        for i, entry in enumerate(entries[:5]):
-            txt = f"{i + 1}. {entry['kills']} kills  {entry['time']:.1f}s"
-            self._draw_text_centered(surface, txt, SCREEN_WIDTH // 2, y_start + 25 + i * 22,
-                                     self.font_small, WHITE)
+        if not isinstance(entries, list):
+            return
+        valid_entries = []
+        for e in entries[:5]:
+            if isinstance(e, dict) and "kills" in e and "time" in e:
+                valid_entries.append(e)
+        for i, entry in enumerate(valid_entries):
+            try:
+                k = int(entry.get("kills", 0))
+                t = float(entry.get("time", 0.0))
+                txt = f"{i + 1}. {k} kills  {t:.1f}s"
+                self._draw_text_centered(surface, txt, SCREEN_WIDTH // 2, y_start + 25 + i * 22,
+                                         self.font_small, WHITE)
+            except (TypeError, ValueError):
+                continue
 
     def _draw_text(self, surface, text, x, y, font, color):
         txt = font.render(text, True, color)

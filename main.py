@@ -6,7 +6,7 @@ import random
 import pygame
 
 from data.config import (
-    SCREEN_WIDTH, SCREEN_HEIGHT, FPS, BLACK, WHITE, GRAY, CYAN,
+    SCREEN_WIDTH, SCREEN_HEIGHT, FPS, BLACK, WHITE, GRAY, CYAN, YELLOW,
     HUD_HEIGHT, LEADERBOARD_FILE, LEADERBOARD_MAX_ENTRIES, TOTAL_WAVES,
 )
 from entities.player import Player
@@ -41,6 +41,10 @@ class Game:
         self.wave_delay = 0.0
         self.stars = self._generate_stars()
 
+        self.menu_font_title = pygame.font.Font(None, 56)
+        self.menu_font_sub = pygame.font.Font(None, 26)
+        self.menu_font_small = pygame.font.Font(None, 22)
+
         self.leaderboard = self._load_leaderboard()
 
     def _generate_stars(self):
@@ -58,7 +62,20 @@ class Game:
         if os.path.exists(LEADERBOARD_FILE):
             try:
                 with open(LEADERBOARD_FILE, 'r') as f:
-                    return json.load(f)
+                    data = json.load(f)
+                    if isinstance(data, list):
+                        result = []
+                        for e in data:
+                            if isinstance(e, dict) and "kills" in e and "time" in e:
+                                try:
+                                    result.append({
+                                        "kills": int(e["kills"]),
+                                        "time": float(e["time"])
+                                    })
+                                except (TypeError, ValueError):
+                                    continue
+                        return result
+                    return []
             except (json.JSONDecodeError, IOError):
                 return []
         return []
@@ -148,14 +165,11 @@ class Game:
     def _draw_menu(self):
         self.screen.fill(BLACK)
         self._draw_stars()
-        font_title = pygame.font.Font(None, 56)
-        font_sub = pygame.font.Font(None, 26)
-        font_small = pygame.font.Font(None, 22)
 
-        title = font_title.render("SPACE SURVIVOR", True, CYAN)
+        title = self.menu_font_title.render("SPACE SURVIVOR", True, CYAN)
         self.screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 200))
 
-        sub = font_sub.render("Survive 10 Waves to Win!", True, WHITE)
+        sub = self.menu_font_sub.render("Survive 10 Waves to Win!", True, WHITE)
         self.screen.blit(sub, (SCREEN_WIDTH // 2 - sub.get_width() // 2, 270))
 
         controls = [
@@ -164,15 +178,15 @@ class Game:
             "Boss waves at 5 and 10!",
         ]
         for i, line in enumerate(controls):
-            txt = font_small.render(line, True, GRAY)
+            txt = self.menu_font_small.render(line, True, GRAY)
             self.screen.blit(txt, (SCREEN_WIDTH // 2 - txt.get_width() // 2, 330 + i * 25))
 
-        prompt = font_sub.render("Press ENTER to Start", True, YELLOW)
+        prompt = self.menu_font_sub.render("Press ENTER to Start", True, YELLOW)
         pulse = int(128 + 127 * math.sin(pygame.time.get_ticks() * 0.003))
         prompt.set_alpha(pulse)
         self.screen.blit(prompt, (SCREEN_WIDTH // 2 - prompt.get_width() // 2, 440))
 
-        quit_txt = font_small.render("Press Q to Quit", True, GRAY)
+        quit_txt = self.menu_font_small.render("Press Q to Quit", True, GRAY)
         self.screen.blit(quit_txt, (SCREEN_WIDTH // 2 - quit_txt.get_width() // 2, 480))
 
         if self.leaderboard:

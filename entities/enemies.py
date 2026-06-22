@@ -11,7 +11,7 @@ from data.config import (
     BOSS_HP_WAVE5, BOSS_HP_WAVE10, BOSS_SPEED, BOSS_SIZE,
     BOSS_FIRE_RATE, BOSS_BULLET_SPEED, BOSS_SHIELD_DURATION,
     BOSS_BERSERK_THRESHOLD, BOSS_SCORE,
-    RED, ORANGE, PURPLE, WHITE, YELLOW, CYAN, GRAY,
+    RED, ORANGE, PURPLE, WHITE, YELLOW, CYAN, GRAY, GREEN,
 )
 
 
@@ -191,7 +191,7 @@ class Mothership:
         if self.alive and self.hp < self.max_hp:
             bar_w = s * 2
             bar_h = 4
-            ratio = self.hp / self.max_hp
+            ratio = max(0.0, min(1.0, self.hp / self.max_hp))
             pygame.draw.rect(surface, RED, (ix - bar_w // 2, iy - s - 8, bar_w, bar_h))
             pygame.draw.rect(surface, GREEN, (ix - bar_w // 2, iy - s - 8, int(bar_w * ratio), bar_h))
 
@@ -244,12 +244,13 @@ class Boss:
         hp_ratio = self.hp / self.max_hp
 
         if self.state == self.STATE_NORMAL:
-            if hp_ratio <= 0.6 and not self.shield_active:
+            if hp_ratio <= BOSS_BERSERK_THRESHOLD:
+                self.state = self.STATE_BERSERK
+                self.shield_active = False
+            elif hp_ratio <= 0.6 and not self.shield_active:
                 self.state = self.STATE_SHIELD
                 self.shield_timer = BOSS_SHIELD_DURATION
                 self.shield_active = True
-            if hp_ratio <= BOSS_BERSERK_THRESHOLD:
-                self.state = self.STATE_BERSERK
 
         elif self.state == self.STATE_SHIELD:
             self.shield_timer -= dt
@@ -327,7 +328,7 @@ class Boss:
 
         bar_w = s * 3
         bar_h = 6
-        ratio = self.hp / self.max_hp
+        ratio = max(0.0, min(1.0, self.hp / self.max_hp))
         bx = ix - bar_w // 2
         by = iy - s - 15
         pygame.draw.rect(surface, (60, 60, 60), (bx, by, bar_w, bar_h))
