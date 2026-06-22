@@ -1,9 +1,19 @@
 import math
 import random
+import pygame
 from data.config import (
     XP_CRYSTAL_VALUE, XP_CRYSTAL_SIZE, XP_CRYSTAL_DROP_CHANCE,
     WEAPON_CRATE_DROP_CHANCE, SCREEN_HEIGHT, SCREEN_WIDTH,
 )
+
+_CRATE_FONT = None
+
+
+def _get_crate_font():
+    global _CRATE_FONT
+    if _CRATE_FONT is None:
+        _CRATE_FONT = pygame.font.Font(None, 18)
+    return _CRATE_FONT
 
 
 class XPCrystal:
@@ -30,11 +40,10 @@ class XPCrystal:
         if not self.alive:
             return
         pulse_scale = 1.0 + 0.2 * math.sin(self.pulse)
-        s = int(self.size * pulse_scale)
+        s = max(1, int(self.size * pulse_scale))
         alpha = 255 if self.lifetime > 2 else int(255 * self.lifetime / 2.0)
         color = (50, 200, 255)
         ix, iy = int(self.x), int(self.y)
-        pygame = __import__('pygame')
         if alpha >= 200:
             pygame.draw.circle(surface, color, (ix, iy), s)
             pygame.draw.circle(surface, (200, 240, 255), (ix, iy), max(1, s - 2))
@@ -66,7 +75,6 @@ class WeaponCrate:
     def draw(self, surface):
         if not self.alive:
             return
-        pygame = __import__('pygame')
         ix, iy = int(self.x), int(self.y)
         s = self.size
         alpha = 255 if self.lifetime > 2 else int(255 * self.lifetime / 2.0)
@@ -80,7 +88,7 @@ class WeaponCrate:
             ]
             pygame.draw.polygon(surface, (255, 200, 50), points)
             pygame.draw.polygon(surface, (255, 255, 150), points, 2)
-            font = pygame.font.SysFont(None, 14)
+            font = _get_crate_font()
             txt = font.render("W", True, (100, 50, 0))
             surface.blit(txt, (ix - txt.get_width() // 2, iy - txt.get_height() // 2))
         else:

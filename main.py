@@ -148,9 +148,9 @@ class Game:
     def _draw_menu(self):
         self.screen.fill(BLACK)
         self._draw_stars()
-        font_title = pygame.font.SysFont("consolas", 48, bold=True)
-        font_sub = pygame.font.SysFont("consolas", 20)
-        font_small = pygame.font.SysFont("consolas", 16)
+        font_title = pygame.font.Font(None, 56)
+        font_sub = pygame.font.Font(None, 26)
+        font_small = pygame.font.Font(None, 22)
 
         title = font_title.render("SPACE SURVIVOR", True, CYAN)
         self.screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 200))
@@ -208,12 +208,23 @@ class Game:
         new_enemies = self.wave_manager.update(dt, self.enemies, self.player)
         self.enemies.extend(new_enemies)
 
-        boss = self.wave_manager.get_boss()
+        boss = self.wave_manager.get_boss_if_not_added()
         if boss:
             self.enemies.append(boss)
 
         for e in self.enemies:
             e.update(dt, self.player, self.bullet_pool)
+
+        mothership_spawns = []
+        for e in self.enemies:
+            if isinstance(e, Mothership) and e.alive and e.drifting:
+                if e.should_spawn_patrol(dt):
+                    p = Patrol(self.player.x if self.player else None,
+                               self.player.y if self.player else None)
+                    p.x = e.x + random.uniform(-20, 20)
+                    p.y = e.y + e.size
+                    mothership_spawns.append(p)
+        self.enemies.extend(mothership_spawns)
 
         self.bullet_pool.update(dt)
         self.particles.update(dt)

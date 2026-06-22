@@ -16,6 +16,7 @@ class WaveManager:
         self.all_waves_complete = False
         self.wave_announce_timer = 0.0
         self.boss = None
+        self.boss_added = False
 
     def start_next_wave(self):
         self.current_wave += 1
@@ -28,6 +29,7 @@ class WaveManager:
         self.wave_announce_timer = 2.5
         self.enemies_to_spawn = []
         self.spawn_timer = 0.0
+        self.boss_added = False
 
         if self.current_wave in (5, 10):
             self.boss = Boss(self.current_wave)
@@ -35,6 +37,7 @@ class WaveManager:
             self._fill_spawn_list(count, boss_wave=True)
             self.spawn_interval = 0.5
         else:
+            self.boss = None
             count = WAVE_ENEMY_BASE + (self.current_wave - 1) * WAVE_ENEMY_INCREMENT
             self._fill_spawn_list(count)
             self.spawn_interval = max(0.3, 0.8 - self.current_wave * 0.04)
@@ -97,21 +100,26 @@ class WaveManager:
             pass
         elif not self.enemies_to_spawn:
             boss_alive = self.boss is not None and self.boss.alive
-            active_count = len(active_enemies)
-            if not boss_alive and active_count == 0:
+            alive_count = sum(1 for e in active_enemies if e.alive)
+            if not boss_alive and alive_count == 0:
                 self.wave_active = False
                 self.wave_complete = True
                 self.boss = None
 
         return new_enemies
 
-    def get_boss(self):
-        b = self.boss
-        self.boss = None
-        return b
+    def get_boss_if_not_added(self):
+        if self.boss and not self.boss_added:
+            self.boss_added = True
+            return self.boss
+        return None
 
     def remaining_enemies(self, active_enemies):
-        return len(self.enemies_to_spawn) + len(active_enemies) + (1 if self.boss and self.boss.alive else 0)
+        count = len(self.enemies_to_spawn) + sum(1 for e in active_enemies if e.alive)
+        if self.boss and self.boss.alive:
+            if not self.boss_added:
+                count += 1
+        return count
 
     def reset(self):
         self.current_wave = 0
@@ -122,3 +130,4 @@ class WaveManager:
         self.all_waves_complete = False
         self.wave_announce_timer = 0.0
         self.boss = None
+        self.boss_added = False

@@ -7,9 +7,9 @@ from data.config import (
 
 class HUD:
     def __init__(self):
-        self.font = pygame.font.SysFont("consolas", 16)
-        self.font_large = pygame.font.SysFont("consolas", 28, bold=True)
-        self.font_small = pygame.font.SysFont("consolas", 12)
+        self.font = pygame.font.Font(None, 22)
+        self.font_large = pygame.font.Font(None, 38)
+        self.font_small = pygame.font.Font(None, 18)
 
     def draw(self, surface, player, wave_manager, remaining):
         pygame.draw.rect(surface, DARK_GRAY, (0, 0, SCREEN_WIDTH, HUD_HEIGHT))

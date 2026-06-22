@@ -1,5 +1,6 @@
 import random
 import math
+import pygame
 from data.config import PARTICLE_COUNT, PARTICLE_LIFETIME, RED, ORANGE, YELLOW, WHITE
 
 
@@ -56,11 +57,9 @@ class Particle:
         size = max(1, int(self.size * alpha_ratio))
         ix, iy = int(self.x), int(self.y)
         if alpha_ratio > 0.5:
-            pygame = __import__('pygame')
             pygame.draw.circle(surface, self.color, (ix, iy), size)
         else:
             faded = tuple(int(c * alpha_ratio) for c in self.color)
-            pygame = __import__('pygame')
             pygame.draw.circle(surface, faded, (ix, iy), size)
 
 

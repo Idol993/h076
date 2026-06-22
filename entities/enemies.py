@@ -224,6 +224,7 @@ class Boss:
         self.drift_dir = 1
         self.pattern_timer = 0.0
         self.burst_count = 0
+        self.spawn_timer = MOTHERSHIP_SPAWN_INTERVAL
 
     def update(self, dt, player=None, bullet_pool=None):
         if self.state == self.STATE_ENTER:
@@ -282,6 +283,13 @@ class Boss:
                 self.x - self.size, self.y + self.size // 2, angle - 0.15, BOSS_BULLET_SPEED)
             bullet_pool.spawn_enemy_bullet(
                 self.x + self.size, self.y + self.size // 2, angle + 0.15, BOSS_BULLET_SPEED)
+
+    def should_spawn_patrol(self, dt):
+        self.spawn_timer -= dt
+        if self.spawn_timer <= 0:
+            self.spawn_timer = MOTHERSHIP_SPAWN_INTERVAL
+            return True
+        return False
 
     def take_damage(self, amount):
         if self.shield_active:
